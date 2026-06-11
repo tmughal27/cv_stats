@@ -58,21 +58,6 @@ def compute_stats_and_entropy_from_hist(r_bars, g_bars, b_bars, total_pixels):
 
 
 def linear_transform(frame: np.ndarray, alpha: float, beta: float) -> np.ndarray:
-    """
-    Apply a per-channel linear (affine) transformation to an RGB frame.
-
-    For each channel c: output[c] = clip(alpha * input[c] + beta, 0, 255)
-
-    Channels are processed independently — no channel mixing occurs.
-
-    Args:
-        frame: NumPy uint8 array of shape (H, W, 3), channels ordered R, G, B.
-        alpha: Gain (multiplicative factor) applied to every channel.
-        beta:  Bias (additive offset) applied to every channel.
-
-    Returns:
-        Transformed frame, dtype uint8, same shape as input.
-    """
     transformed = alpha * frame.astype(np.float64) + beta
     return np.clip(transformed, 0, 255).astype(np.uint8)
 
@@ -81,19 +66,6 @@ import cv2
 
 
 def apply_filter(frame: np.ndarray) -> np.ndarray:
-    """
-    Apply a Gaussian blur filter to each channel of an RGB frame.
-
-    The filter is a 5×5 Gaussian kernel (sigma=1.0) applied independently to
-    each channel via cv2.GaussianBlur.  The output is always clamped to
-    [0, 255] and cast to uint8.
-
-    Args:
-        frame: NumPy uint8 array of shape (H, W, 3), channels ordered R, G, B.
-
-    Returns:
-        Filtered frame, dtype uint8, same spatial dimensions as input.
-    """
     blurred = cv2.GaussianBlur(frame, (21, 21), sigmaX=1.0)
     return np.clip(blurred, 0, 255).astype(np.uint8)
 
@@ -110,25 +82,6 @@ except Exception:
 
 
 def segment_background(frame: np.ndarray, blur_ksize: int = 55) -> np.ndarray:
-    """
-    Replace the background of an RGB frame with a blurred version of itself.
-
-    Pipeline (per frame):
-        1. Run MediaPipe Selfie Segmentation → get a soft probability mask.
-        2. Threshold the mask at 0.5 to get a binary person/background split.
-        3. Create a blurred copy of the frame.
-        4. Where the mask says "person" → keep the original pixel.
-           Where the mask says "background" → use the blurred pixel.
-        5. Return the composited frame.
-
-    Args:
-        frame:      NumPy uint8 array of shape (H, W, 3), channels ordered R, G, B.
-        blur_ksize: Kernel size for the background blur (must be odd). Default: 55.
-
-    Returns:
-        Processed frame, dtype uint8, same shape as input.
-        If MediaPipe is unavailable the original frame is returned unchanged.
-    """
     if not _SEGMENTATION_AVAILABLE:
         return frame
 
@@ -150,9 +103,6 @@ def segment_background(frame: np.ndarray, blur_ksize: int = 55) -> np.ndarray:
 
 
 def histogram_equalization(frame: np.ndarray, r_bars, g_bars, b_bars) -> np.ndarray:
-    """
-    Ultra-optimized histogram equalization that reuses pre-calculated Numba bars.
-    """
     total_pixels = frame.shape[0] * frame.shape[1]
     output = np.empty_like(frame)
     
