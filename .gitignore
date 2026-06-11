@@ -4,6 +4,11 @@ venv/
 env/
 ENV/
 
+# Kiro and test directories
+.kiro/
+tests/
+
+
 # Python byte-code / caches
 __pycache__/
 *.py[cod]
