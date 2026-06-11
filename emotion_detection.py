@@ -20,16 +20,7 @@ MOOD_BG_RECIPE = {
 
 
 def build_mood_bg(height: int, width: int, style: str) -> np.ndarray:
-    """
-    Generate a smooth vertical gradient background image.
-
-    Args:
-        height, width : dimensions matching the webcam frame.
-        style         : "cheerful", "clean", or "calm".
-
-    Returns:
-        uint8 RGB array of shape (height, width, 3).
-    """
+    
     if style == "cheerful":
         top    = np.array([255, 140,  60], dtype=np.float32)
         bottom = np.array([255, 230,  80], dtype=np.float32)
@@ -47,18 +38,6 @@ def build_mood_bg(height: int, width: int, style: str) -> np.ndarray:
 
 
 class EmotionDetector:
-    """
-    Detects facial emotion from RGB frames using the FER library.
-
-    The heavy model is loaded once on first use.  Between loads the detector
-    runs every N frames and caches the result so fps stays smooth.
-
-    Usage::
-
-        detector = EmotionDetector(run_every_n_frames=5)
-        result   = detector.analyse(rgb_frame)
-        # result → dict(emotion, confidence, symbol, mood)  or  None
-    """
 
     def __init__(self, run_every_n_frames: int = 5):
         self._run_every     = run_every_n_frames
@@ -106,17 +85,7 @@ class EmotionDetector:
             return None
 
     def analyse(self, rgb_frame: np.ndarray):
-        """
-        Analyse a frame and return emotion information.
 
-        Only calls the neural net every N frames; returns cached result otherwise.
-
-        Args:
-            rgb_frame: uint8 RGB image (H, W, 3).
-
-        Returns:
-            Dict with keys (emotion, confidence, symbol, mood), or None.
-        """
         if not self._try_load():
             return None
 
@@ -159,14 +128,6 @@ def apply_emotion_overlay(
     result:   dict | None,
     mood_bg:  np.ndarray | None,
 ) -> np.ndarray:
-    """
-    Composite the mood background and emotion info panel onto the frame.
-
-    The background replacement is applied directly to the frame pixels.
-    The info panel and smiley are drawn onto a blank canvas, that canvas is
-    horizontally flipped, then composited onto the frame so only the overlay
-    is mirrored, not the video.
-    """
     output = frame.copy()
     h, w   = output.shape[:2]
 
